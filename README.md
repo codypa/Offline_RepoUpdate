@@ -1,4 +1,4 @@
-#Offline_RepoUpdate(INTRO)
+# Offline_RepoUpdate(INTRO)
 Purpose: Automate the process of updating an offline (air-gapped) repository and sending updates to other RHEL (or similar distro) machines within a closed-network.
 
 There are two different approaces to update your machines, depending on what you have in your environment:
