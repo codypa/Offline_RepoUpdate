@@ -1,0 +1,31 @@
+---
+- name: Mount NFS, copy repo file, and update YUM
+  hosts: all
+  become: yes
+  tasks:
+
+    - name: Ensure NFS is mounted
+      mount:
+        path: /mnt  # Local mount point
+        src: "nfs1:/repo"  # NFS server and directory
+        fstype: nfs
+        state: mounted
+
+    - name: Copy offline.repo from NFS to /etc/yum.repos.d/
+      copy:
+        src: /mnt/offline.repo  # Path to the repo file on the NFS mount
+        dest: /etc/yum.repos.d/offline.repo
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Clean YUM cache
+      command: yum clean all
+
+    - name: Update all system packages with failure tolerance
+      yum:
+        name: "*"
+        state: latest
+        allowerasing: yes
+        nobest: yes
+      ignore_errors: yes
