@@ -3,6 +3,7 @@ Purpose: This script automates the process of updating an offline (air-gapped) r
 
 Preparation:
 - Ensure to follow the README-prep instructions to prepare your environment. 
+
 Contents:
 1. Log creation in /var/log/
 2. Inbox creation '$HOME/inbox'(if it does not exist). This directory is where repo-update zip files will be staged for extracting.
