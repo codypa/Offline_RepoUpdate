@@ -55,6 +55,32 @@ dnf reposync --repoid=epel -p /repositories/ --downloadcomps --download-metadata
    ```
 5. Make a directory for your playbook: `mkdir /etc/ansible/playbooks`
 6. Copy the 'update.yml' file to the '/etc/ansible/playbooks' directory.
-
+7. Make your offline repo server mountable by also making it an NFS server:
+```bash
+dnf install nfs-utils -y
+chown -R nfsnobody:nfsnobody /repositories
+chmod -R 755 /repositories
+vim /etc/exports
+```
+- Follow this configuration for the 'exports' file:
+```bash
+/repositories *(rw,sync,no_root_squash,no_all_squash)
+```
+- Apply changes:
+```bash
+exportfs -a
+systemctl start nfs-server
+systemctl enable nfs-server
+systemctl start rpcbind
+systemctl enable rpcbind
+```
+- Configure firewall:
+```bash
+firewall-cmd --permanent --add-service=nfs
+firewall-cmd --permanent --add-service=rpc-bind
+firewall-cmd --permanent --add-service=mountd
+firewall-cmd --reload
+```
+- Other hosts will need to install nfs-utils in order to mount, if not already installed: `dnf install nfs-utils -y`
 - From here, you should be ready to launch the script. Enjoy.
     
