@@ -12,16 +12,16 @@ Summary:
 8. As is echo'ed, if everything ran smoothly, remove all files in the '$HOME/inbox/' directory to prepare for your next updates.
 
 # Preparation
-- In order to update an offline server, you first need a server that is online with a subscription to sync from the Redhat Network(RHN).
-  1. Create a directory in your home directory named repositories: `mkdir /repositories`
-  2. Create a cronjob to sync from the desired RepoID's every day to your '/repositories' directory. You can create this file in '/etc/cron.daily':
+- In order to update an offline server, you first need a server that is online with a subscription to sync from the Redhat Network(RHN). Server 1:
+1. Create a directory in your home directory named repositories: `mkdir /repositories`
+2. Create a cronjob to sync from the desired RepoID's every day to your '/repositories' directory. You can create this file in '/etc/cron.daily':
 ```bash
 dnf reposync --repoid=rhel-8-for-x86_64-appstream-rpms -p /repositories/ --downloadcomps --download-metadata
 dnf reposync --repoid=rhel-8-for-x86_64-baseos-rpms -p /repositories/ --downloadcomps --download-metadata
 dnf reposync --repoid=rhel-8-for-x86_64-supplementary-rpms -p /repositories/ --downloadcomps --download-metadata
 dnf reposync --repoid=epel -p /repositories/ --downloadcomps --download-metadata
 ```
-  3. When it comes time to update systems in your offline network, you need to copy the latest RPM's to disc(s):
+- When it comes time to update systems in your offline network, you need to copy the latest RPM's to disc(s):
      ```bash
      #Create a directory for outgoing RPMs
      mkdir -p /home/outbox/rhel
@@ -35,3 +35,26 @@ dnf reposync --repoid=epel -p /repositories/ --downloadcomps --download-metadata
      cd /
      umount /mnt/cdrom
      ```
+- Next, will be configuring your offline repository. Server 2:
+1. Create an inbox for incoming patches: `mkdir $HOME/inbox`
+2. Install ansible on our system, generate ssh keys, and copy id with other machines. Ensure to do the copy with:
+   ```bash
+   dnf install epel-release -y
+   dnf install ansible -y
+   ssh-keygen -t rsa -b 2048
+   ssh-copy-id myUser@host01.lab.com
+   ```
+3. Generate the 'inventory.ini' file in '/etc/ansible/:
+   `vim /etc/ansible/inventory.ini`
+4. Example of inventory.ini contents. Replace hostnames with all hostnames that you copied your ssh-id to:
+   ```yaml
+   [myLab]
+   host01.lab.com  ansible_user=myUser
+   host02.lab.com  ansible_user=myUser
+   host03.lab.com  ansible_user=myUser
+   ```
+5. Make a directory for your playbook: `mkdir /etc/ansible/playbooks`
+6. Copy the 'update.yml' file to the '/etc/ansible/playbooks' directory.
+
+- From here, you should be ready to launch the script. Enjoy.
+    
