@@ -7,13 +7,13 @@
     - name: Ensure NFS is mounted
       mount:
         path: /mnt  # Local mount point
-        src: "nfs1:/repo"  # NFS server and directory
+        src: "nfs1:/repository"  # NFS server and directory
         fstype: nfs
         state: mounted
 
     - name: Copy offline.repo from NFS to /etc/yum.repos.d/
       copy:
-        src: /mnt/offline.repo  # Path to the repo file on the NFS mount
+        src: /mnt/offline.repo.client  # Path to the repo file on the NFS mount
         dest: /etc/yum.repos.d/offline.repo
         owner: root
         group: root
