@@ -30,8 +30,9 @@ dnf reposync --repoid=epel -p /repositories/ --downloadcomps --download-metadata
      #Find and copy latest RPM's to the outbox directory
      find . -name '*.rpm' -newermt "01-$month -1 sec" -and -not -newermt "01-$month +1 month -1 sec" -exec cp -p {} /home/outbox/rhel \;
      chown -R youruser:youruser /home/outbox
-     #The following is an example, given you have already mounted your disc.
-     scp -r /home/outbox/rhel /mnt/cdrom
+     #The following is an example, given you have already mounted your disc. You will need to discern how to zip up the contents of this folder so that they may fit on to a DVD/CD/BluRay. Repeat as needed.
+     zip -r rhel.zip /home/outbox/rhel
+     scp -r /home/outbox/rhel.zip /mnt/cdrom
      cd /
      umount /mnt/cdrom
      ```
