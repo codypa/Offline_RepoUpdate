@@ -112,9 +112,9 @@ echo -e "${GREEN}Finished appending to 'offline.repo.client' file.${RESET}" | te
 
 for host in $(cat /repositories/Cscripts/updateinventory); do
 	echo "Configuring and updating $host"
-	ssh username@$host > /dev/null 2>&1 << EOF
+	ssh username@$host >> $logFile 2>&1 << EOF
 		mount nfs01:/repositories /mnt
-		cp /mnt/offline.repo.client /etc/yum.repos.d/offline.repo
+		/usr/bin/cp -f /mnt/offline.repo.client /etc/yum.repos.d/offline.repo
 		yum clean all
 		yum update --allowerasing --nobest -y
 EOF
