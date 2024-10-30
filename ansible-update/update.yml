@@ -13,7 +13,7 @@
 
     - name: Copy offline.repo from NFS to /etc/yum.repos.d/
       copy:
-        src: /mnt/offline.repo.client  # Path to the repo file on the NFS mount
+        src: /repository/offline.repo.client  # Path to the repo file on the NFS mount
         dest: /etc/yum.repos.d/offline.repo
         owner: root
         group: root
@@ -28,4 +28,3 @@
         state: latest
         allowerasing: yes
         nobest: yes
-      ignore_errors: yes
