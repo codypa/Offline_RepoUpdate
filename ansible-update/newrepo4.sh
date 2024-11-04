@@ -2,7 +2,7 @@
 
 ###### CREATED BY CODY PASCUAL ######
 
-logFile=/var/log/update.log
+logFile=/var/log/repo_update.log
 zipLocation=/home/cpaco/inbox 
 
 #Color variables:
@@ -15,19 +15,21 @@ cleanup() {
 	rm -rf $newRepo
 	echo "Finished cleaning up."
 }
-
+echo "=============== REPO CREATION BEGIN $date ===============" >> $logFile 2>&1
 read -p "Enter your repository name (e.g. September2024): " repoName
 
 newRepo="/repositories/rhel8/$repoName"
 
 if [ -d $newRepo ]; then
 	echo -e "${RED}Repository name already exists.. Exiting..${RESET}"
+ 	echo "$date  :  Repo creation failed due to already existing directory." >> $logFile 2>&1
 	exit 1
 fi
 
 #1. Create new repo directory
 mkdir -p /repositories/rhel8/$repoName
 echo -e "${GREEN}Created $repoName in '/repositories/rhel8/'${RESET}"	
+echo "$date  :  Repo created $repoName" >> $logFile 2>&1
 
 #2. Unzip patches to new directory
 for zipFile in "$zipLocation"/*.zip; do
@@ -38,14 +40,17 @@ for zipFile in "$zipLocation"/*.zip; do
             echo "Unzipping '$zipFile' to '$newRepo'"
             unzip "$zipFile" -d "$newRepo" >> "$logFile" 2>&1
             echo -e "${GREEN}Finished unzipping '$zipFile'.${RESET}"
+	    echo "$date  :  Unzipped repo contents" >> $logFile 2>&1
         else
             echo -e "${RED}Zip file '$zipFile' is either corrupted or does not exist.${RESET}"
 			cleanup
+   			echo "$date  :  Repo unzip failed. Executed cleanup" >> $logFile 2>&1
 			exit 1
         fi
     else
         echo -e "${RED}No zip files found in $zipLocation.${RESET}"
 		cleanup
+  		echo "$date  :  No zip files found." >> $logFile 2>&1
 		exit 1
 	fi
 done
@@ -57,6 +62,7 @@ if [ "$(ls -A $newRepo)" ]; then
 else
 	echo -e "${RED}$newRepo is empty. Cleaning up.${RESET}"
 	cleanup
+ 	echo "$date  :  Failure: Repo directory empty." >> $logFile 2>&1
 	exit 1
 fi
 
@@ -64,10 +70,12 @@ fi
 find "$newRepo" -mindepth 2 -type f -exec mv {} "$newRepo" \;
 find "$newRepo" -mindepth 1 -type d -empty -delete
 echo -e "${GREEN}Formatted repository directory.${RESET}"
+echo "$date  :  Formatted repo directory." >> $logFile 2>&1
 
 #4. Create repodata in new repo directory
 echo -e "${RESET}Generating repodata..."
 createrepo --update --workers 16 $newRepo
+echo "$date  :  Generated repomd data." >> $logFile 2>&1
 
 #5. Append the new repository to the 'offline.repo.client' directory
 {
@@ -80,7 +88,13 @@ createrepo --update --workers 16 $newRepo
 	echo "module_hotfixes=1"
 } >> /repositories/offline.repo.client
 echo -e "${GREEN}Finished appending to 'offline.repo.client' file.${RESET}"
+echo "$date  :  Formatted offline.repo file" >> $logFile 2>&1
 
 #6.Copy, clean, update
 
 ansible-playbook -i inventory.ini playbooks/rupdate.yml -K
+echo -e "${GREEN}ENVIRONMENT UPDATE COMPLETE"
+echo "$date  :  ENVIRONMENT UPDATE COMPLETE" >> $logFile 2>&1
+
+##### END OF SCRIPT #####
+
