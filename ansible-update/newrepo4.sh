@@ -78,17 +78,29 @@ createrepo --update --workers 16 $newRepo
 echo "$date  :  Generated repomd data." >> $logFile 2>&1
 
 #5. Append the new repository to the 'offline.repo.client' directory
-{
-	echo ""
-	echo "[$repoName]"
-	echo "name=$repoName"
-	echo "baseurl=file:///mnt/rhel8/$repoName"
-	echo "enabled=1"
-	echo "gpgcheck=0"
-	echo "module_hotfixes=1"
-} >> /repositories/offline.repo.client
-echo -e "${GREEN}Finished appending to 'offline.repo.client' file.${RESET}"
-echo "$date  :  Formatted offline.repo file" >> $logFile 2>&1
+if grep -q "^\[$repoName\]" /repositories/offline.repo.client; then
+    echo "Repository '$repoName' already exists in 'offline.repo.client'."
+    read -p "Would you like to continue to update environment? (y/n): " choice
+    if [[ "$choice" != "y" ]]; then
+        echo "Exiting script."
+	echo "$date  :  Exited script." >> "$logFile" 2>&1
+        exit 0
+    else
+        echo "$date  :  Continue to environment update after duplicate prompt." >> "$logFile" 2>&1
+    fi
+else
+    {
+        echo ""
+        echo "[$repoName]"
+        echo "name=$repoName"
+        echo "baseurl=file:///mnt/rhel8/$repoName"
+        echo "enabled=1"
+        echo "gpgcheck=0"
+        echo "module_hotfixes=1"
+    } >> /repositories/offline.repo.client
+    echo -e "${GREEN}Finished appending to 'offline.repo.client' file.${RESET}"
+    echo "$date  :  Formatted offline.repo file" >> "$logFile" 2>&1
+fi
 
 #6.Copy, clean, update
 
